@@ -54,7 +54,10 @@ export const HyperHero = () => {
       id="hero"
       className="relative min-h-screen overflow-hidden"
     >
-      <HeroVideo className="min-h-screen px-6 py-16 sm:px-8 lg:px-14 flex items-center">
+      <HeroVideo
+        src="/supercars-racing-sri-lanka.mp4"
+        className="min-h-screen px-6 py-16 sm:px-8 lg:px-14 flex items-center"
+      >
       <div className="absolute inset-0 overflow-hidden" aria-hidden>
         <div ref={backgroundRef} className="absolute -inset-12 scale-[1.04]">
           <div className="h-full w-full" />

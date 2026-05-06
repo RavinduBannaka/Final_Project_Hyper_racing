@@ -4,27 +4,51 @@ import { useHeroVideo } from "../hooks/useHeroVideo";
 interface HeroVideoProps {
   children?: ReactNode;
   className?: string;
+  src?: string;
 }
 
-export default function HeroVideo({ children, className = "" }: HeroVideoProps) {
+export default function HeroVideo({ children, className = "", src }: HeroVideoProps) {
   const { video, error } = useHeroVideo();
   const videoRef = useRef<HTMLVideoElement>(null);
   const [muted, setMuted] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
   const [videoFailed, setVideoFailed] = useState(false);
   const [volume, setVolume] = useState(0.5);
+  const videoUrl = src || video.url;
 
   useEffect(() => {
     if (videoRef.current) {
       videoRef.current.volume = volume;
+      videoRef.current.muted = muted;
+      videoRef.current.defaultMuted = true;
     }
-  }, [volume]);
+  }, [muted, volume]);
 
-  const toggleMute = () => {
-    if (videoRef.current) {
-      const nextMuted = !muted;
-      videoRef.current.muted = nextMuted;
-      setMuted(nextMuted);
+  useEffect(() => {
+    setVideoFailed(false);
+    setIsPlaying(false);
+  }, [videoUrl]);
+
+  const toggleMute = async () => {
+    const videoElement = videoRef.current;
+    if (!videoElement) return;
+
+    const nextMuted = !muted;
+    const nextVolume = volume === 0 && !nextMuted ? 0.5 : volume;
+
+    videoElement.volume = nextVolume;
+    videoElement.muted = nextMuted;
+    setVolume(nextVolume);
+    setMuted(nextMuted);
+
+    if (!nextMuted) {
+      try {
+        await videoElement.play();
+      } catch (err) {
+        console.error("[HeroVideo] Could not start audio playback:", err);
+        videoElement.muted = true;
+        setMuted(true);
+      }
     }
   };
 
@@ -39,23 +63,28 @@ export default function HeroVideo({ children, className = "" }: HeroVideoProps) 
       } else {
         videoRef.current.muted = false;
         setMuted(false);
+        videoRef.current.play().catch((err) => {
+          console.error("[HeroVideo] Could not start audio playback:", err);
+          if (videoRef.current) videoRef.current.muted = true;
+          setMuted(true);
+        });
       }
     }
   };
 
   const handleVideoError = () => {
-    console.error("[HeroVideo] Failed to load video:", video.url);
+    console.error("[HeroVideo] Failed to load video:", videoUrl);
     setVideoFailed(true);
   };
 
-  const hasVideo = !error && !videoFailed;
+  const hasVideo = !videoFailed && (!!src || !error);
 
   return (
     <div className={`relative w-full overflow-hidden ${className}`} style={{ minHeight: "100vh" }}>
       {hasVideo && (
         <video
           ref={videoRef}
-          src={video.url}
+          src={videoUrl}
           autoPlay
           loop
           muted={muted}
@@ -115,6 +144,7 @@ export default function HeroVideo({ children, className = "" }: HeroVideoProps) 
         >
           <button
             onClick={toggleMute}
+            aria-label={muted ? "Unmute hero video" : "Mute hero video"}
             title={muted ? "Unmute" : "Mute"}
             style={{
               background: "none",
