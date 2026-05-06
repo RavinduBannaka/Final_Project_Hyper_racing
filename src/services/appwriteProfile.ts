@@ -1,0 +1,47 @@
+import { databases, Query } from "./appwriteClient";
+
+const DATABASE_ID = import.meta.env.VITE_APPWRITE_DATABASE_ID;
+const USERS_COLLECTION_ID = import.meta.env.VITE_APPWRITE_USERS_COLLECTION_ID;
+
+if (!DATABASE_ID || !USERS_COLLECTION_ID) {
+  throw new Error(
+    "[Appwrite] Missing VITE_APPWRITE_DATABASE_ID or VITE_APPWRITE_USERS_COLLECTION_ID in your .env file."
+  );
+}
+
+export interface UserProfile {
+  userId: string;
+  username: string;
+  email: string;
+  avatarColor: string;
+  avatarUrl: string;
+  coins: number;
+  wins: number;
+  losses: number;
+  bio: string;
+}
+
+export async function fetchUserProfile(userId: string): Promise<UserProfile> {
+  const response = await databases.listDocuments(
+    DATABASE_ID,
+    USERS_COLLECTION_ID,
+    [Query.equal("userId", userId)]
+  );
+
+  if (response.documents.length === 0) {
+    throw new Error("User profile not found.");
+  }
+
+  const doc = response.documents[0];
+  return {
+    userId: doc.userId,
+    username: doc.username,
+    email: doc.email,
+    avatarColor: doc.avatarColor,
+    avatarUrl: doc.avatarUrl || "",
+    coins: doc.coins,
+    wins: doc.wins,
+    losses: doc.losses,
+    bio: doc.bio || "",
+  };
+}
