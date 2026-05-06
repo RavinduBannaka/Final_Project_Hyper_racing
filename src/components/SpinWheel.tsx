@@ -1,12 +1,18 @@
 import { useState, useRef, useEffect } from "react";
-import { SPIN_SEGMENTS, SpinResult, applySpinResult } from "@/services/appwriteStore";
+import {
+  SPIN_COST_COINS,
+  SPIN_SEGMENTS,
+  SpinResult,
+  applySpinResult,
+} from "@/services/appwriteStore";
 import { useAuth } from "@/context/AuthContext";
 
 interface SpinWheelProps {
+  coins: number | null;
   onCoinsUpdate: (newCoins: number) => void;
 }
 
-export default function SpinWheel({ onCoinsUpdate }: SpinWheelProps) {
+export default function SpinWheel({ coins, onCoinsUpdate }: SpinWheelProps) {
   const { user } = useAuth();
   const [spinning, setSpinning] = useState(false);
   const [rotation, setRotation] = useState(0);
@@ -24,6 +30,16 @@ export default function SpinWheel({ onCoinsUpdate }: SpinWheelProps) {
     if (!user || spinning || result) return;
     setError("");
     setResult(null);
+
+    if (coins === null) {
+      setError("Loading your coin balance. Please try again in a moment.");
+      return;
+    }
+
+    if (coins < SPIN_COST_COINS) {
+      setError(`You need at least ${SPIN_COST_COINS} coins to spin the wheel.`);
+      return;
+    }
 
     const segmentIndex = Math.floor(Math.random() * 4);
     const fullSpins = (5 + Math.floor(Math.random() * 5)) * 360;
@@ -119,13 +135,18 @@ export default function SpinWheel({ onCoinsUpdate }: SpinWheelProps) {
       {!user ? (
         <p className="text-sm text-muted-foreground">Log in to spin the wheel.</p>
       ) : (
-        <button
-          onClick={handleSpin}
-          disabled={spinning || !!result}
-          className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-rose-500 via-red-500 to-orange-400 px-8 py-3 font-semibold text-white shadow-[0_0_20px_rgba(255,46,64,0.4)] transition hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
-        >
+        <>
+          <p className="text-sm text-white/70">
+            Each spin costs {SPIN_COST_COINS} coins.
+          </p>
+          <button
+            onClick={handleSpin}
+            disabled={spinning || !!result || coins === null || coins < SPIN_COST_COINS}
+            className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-rose-500 via-red-500 to-orange-400 px-8 py-3 font-semibold text-white shadow-[0_0_20px_rgba(255,46,64,0.4)] transition hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+          >
           {spinning ? "Spinning..." : result ? "Result Shown" : "🎰 Spin"}
-        </button>
+          </button>
+        </>
       )}
 
       {/* Result banner */}

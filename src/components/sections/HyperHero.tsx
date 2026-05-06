@@ -1,20 +1,16 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useParallax } from '@/hooks/useParallax'
-import{ ParticleField } from '@/components/reactbits/ParticleField'
+import { ParticleField } from '@/components/reactbits/ParticleField'
 import { GamingLogo } from '@/components/GamingLogo'
 import { Link } from 'react-router-dom'
-
-const heroVideo = '/hyper-racing-hero.mp4'
-const heroPoster =
-  'https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?auto=format&fit=crop&w=2400&q=90&sat=-14&exp=-8'
+import HeroVideo from '@/components/HeroVideo'
 
 export const HyperHero = () => {
   const sectionRef = useRef<HTMLElement | null>(null)
   const backgroundRef = useParallax(18)
-  const [videoFailed, setVideoFailed] = useState(false)
 
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger)
@@ -56,38 +52,12 @@ export const HyperHero = () => {
     <section
       ref={sectionRef}
       id="hero"
-      className="relative min-h-screen overflow-hidden px-6 py-16 sm:px-8 lg:px-14 flex items-center"
+      className="relative min-h-screen overflow-hidden"
     >
+      <HeroVideo className="min-h-screen px-6 py-16 sm:px-8 lg:px-14 flex items-center">
       <div className="absolute inset-0 overflow-hidden" aria-hidden>
-        <div
-          ref={backgroundRef}
-          className="absolute -inset-12 scale-[1.04] bg-black"
-          style={
-            videoFailed
-              ? { backgroundImage: `url(${heroPoster})`, backgroundSize: 'cover', backgroundPosition: 'center' }
-              : undefined
-          }
-        >
-          {!videoFailed ? (
-            <video
-              className="h-full w-full object-cover scale-[0.75] origin-center"
-              autoPlay
-              muted
-              loop
-              playsInline
-              poster={heroPoster}
-              preload="auto"
-              onError={() => setVideoFailed(true)}
-              aria-hidden
-            >
-              <source src={heroVideo} type="video/mp4" />
-            </video>
-          ) : (
-            <div className="h-full w-full bg-gradient-to-br from-slate-900 via-black to-slate-950" />
-          )}
-
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/65 via-black/72 to-black/90" />
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-black/30 via-transparent to-black/45" />
+        <div ref={backgroundRef} className="absolute -inset-12 scale-[1.04]">
+          <div className="h-full w-full" />
         </div>
         <div className="speed-lines" />
         <div className="hyper-grid absolute inset-0" />
@@ -195,6 +165,7 @@ export const HyperHero = () => {
           ))}
         </div>
       </div>
+      </HeroVideo>
     </section>
   )
 }

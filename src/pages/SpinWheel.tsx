@@ -1,67 +1,59 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { SectionTitle } from "@/components/SectionTitle";
 import { GlowCard } from "@/components/reactbits/GlowCard";
-import { MagnetButton } from "@/components/reactbits/MagnetButton";
-import { toast } from "@/hooks/use-toast";
-
-const segments = ["100c", "Rare Card", "500c", "Nitro x3", "200c", "Epic Card", "50c", "Legendary"];
-const colors = [
-  "hsl(184 100% 55%)", "hsl(320 100% 60%)", "hsl(80 100% 60%)", "hsl(184 100% 55%)",
-  "hsl(320 100% 60%)", "hsl(80 100% 60%)", "hsl(184 100% 55%)", "hsl(320 100% 60%)",
-];
+import SpinWheelGame from "@/components/SpinWheel";
+import { useAuth } from "@/context/AuthContext";
+import { fetchUserProfile } from "@/services/appwriteProfile";
+import { SPIN_COST_COINS } from "@/services/appwriteStore";
 
 export default function SpinWheel() {
-  const [angle, setAngle] = useState(0);
-  const [spinning, setSpinning] = useState(false);
+  const { user } = useAuth();
+  const [coins, setCoins] = useState<number | null>(null);
+  const [balanceError, setBalanceError] = useState("");
 
-  const spin = () => {
-    if (spinning) return;
-    setSpinning(true);
-    const idx = Math.floor(Math.random() * segments.length);
-    const target = 360 * 6 + (360 - (idx * 45 + 22));
-    setAngle((a) => a + target);
-    setTimeout(() => {
-      setSpinning(false);
-      toast({ title: "You won!", description: `Reward: ${segments[idx]}` });
-    }, 4200);
-  };
+  useEffect(() => {
+    if (!user) {
+      setCoins(null);
+      return;
+    }
 
-  const seg = 360 / segments.length;
+    setBalanceError("");
+    fetchUserProfile(user.$id)
+      .then((profile) => setCoins(profile.coins))
+      .catch((err: unknown) => {
+        if (err instanceof Error) setBalanceError(err.message);
+      });
+  }, [user]);
 
   return (
     <div className="container py-16 max-w-3xl">
-      <SectionTitle eyebrow="// Daily Spin" title="Free reward, every 24h" subtitle="Spin the wheel for coins, rare cards, and exclusive boosters." />
+      <SectionTitle
+        eyebrow="// Daily Spin"
+        title="Spin to Win"
+        subtitle={`Every spin costs ${SPIN_COST_COINS} coins. Win bonus coins, cards, and boosters.`}
+      />
+
+      <div className="mt-8 flex justify-center">
+        {user ? (
+          <div className="inline-flex items-center gap-3 rounded-full border border-white/15 bg-white/5 px-6 py-3 text-white">
+            <span className="text-sm text-white/70">Your Balance:</span>
+            <span className="text-xl font-bold text-amber-400">
+              {coins !== null ? `${coins} coins` : "Loading..."}
+            </span>
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground">Log in to spin the wheel.</p>
+        )}
+      </div>
+
+      {balanceError && (
+        <p className="mt-6 text-center text-sm font-medium text-red-400">
+          {balanceError}
+        </p>
+      )}
+
       <GlowCard className="mt-10 grid place-items-center py-12">
-        <div className="relative h-80 w-80">
-          <div
-            className="h-full w-full rounded-full border-4 border-primary/60 transition-transform duration-[4000ms] ease-[cubic-bezier(0.22,1,0.36,1)] shadow-neon"
-            style={{
-              transform: `rotate(${angle}deg)`,
-              background: `conic-gradient(${segments
-                .map((_, i) => `${colors[i]} ${i * seg}deg ${(i + 1) * seg}deg`)
-                .join(",")})`,
-            }}
-          >
-            {segments.map((s, i) => (
-              <div
-                key={i}
-                className="absolute left-1/2 top-1/2 origin-left font-display text-xs font-bold uppercase tracking-widest text-background"
-                style={{
-                  transform: `rotate(${i * seg + seg / 2}deg) translateX(60px)`,
-                }}
-              >
-                {s}
-              </div>
-            ))}
-          </div>
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-16 w-16 rounded-full bg-background border-2 border-primary grid place-items-center font-display text-xs font-black text-primary">
-            HR
-          </div>
-          <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[12px] border-r-[12px] border-b-[20px] border-l-transparent border-r-transparent border-b-accent z-10" />
-        </div>
-        <MagnetButton onClick={spin} className="mt-10 px-10 py-4" disabled={spinning}>
-          {spinning ? "Spinning..." : "Spin the wheel"}
-        </MagnetButton>
+        <SpinWheelGame coins={coins} onCoinsUpdate={setCoins} />
       </GlowCard>
     </div>
   );

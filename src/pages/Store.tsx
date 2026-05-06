@@ -5,7 +5,11 @@ import { ScrollReveal } from "@/components/reactbits/ScrollReveal";
 import { Coins } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { fetchUserProfile } from "@/services/appwriteProfile";
-import { COIN_PACKAGES, purchaseCoinPackage } from "@/services/appwriteStore";
+import {
+  COIN_PACKAGES,
+  SPIN_COST_COINS,
+  purchaseCoinPackage,
+} from "@/services/appwriteStore";
 import SpinWheel from "@/components/SpinWheel";
 
 const glows = ["cyan", "magenta", "lime"] as const;
@@ -114,10 +118,11 @@ export default function Store() {
         <SectionTitle
           eyebrow="// Bonus"
           title="Spin to Win"
-          subtitle="Spin the wheel for a chance to earn bonus coins!"
+          subtitle={`Spin the wheel for a chance to earn bonus coins. Each spin costs ${SPIN_COST_COINS} coins.`}
         />
         <div className="mt-8 flex justify-center">
           <SpinWheel
+            coins={coins}
             onCoinsUpdate={(newCoins) => {
               setCoins(newCoins);
               setBuySuccess(`Wheel result applied! New balance: ${newCoins} coins`);

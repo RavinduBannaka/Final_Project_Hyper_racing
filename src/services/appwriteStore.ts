@@ -22,6 +22,8 @@ export type SpinResult = {
   color: string;
 };
 
+export const SPIN_COST_COINS = 50;
+
 export const SPIN_SEGMENTS: SpinResult[] = [
   { label: "Bad Luck", coins: 0, color: "#6b7280" },
   { label: "+50 Coins", coins: 50, color: "#f59e0b" },
@@ -82,7 +84,11 @@ export async function applySpinResult(
     getCurrentCoins(userId),
   ]);
 
-  const newCoins = Math.max(0, currentCoins + result.coins);
+  if (currentCoins < SPIN_COST_COINS) {
+    throw new Error(`You need at least ${SPIN_COST_COINS} coins to spin the wheel.`);
+  }
+
+  const newCoins = Math.max(0, currentCoins - SPIN_COST_COINS + result.coins);
 
   await databases.updateDocument(DATABASE_ID, USERS_COLLECTION_ID, docId, {
     coins: newCoins,
