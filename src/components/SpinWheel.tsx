@@ -113,12 +113,15 @@ export default function SpinWheel({ coins, onCoinsUpdate }: SpinWheelProps) {
               return (
                 <div
                   key={seg.label}
-                  className="absolute left-1/2 top-1/2 origin-center -translate-x-1/2 -translate-y-1/2 whitespace-nowrap text-xs font-bold text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]"
-                  style={{
-                    transform: `translate(-50%, -50%) rotate(${angle}deg) translateY(-65%) rotate(-${angle}deg)`,
-                  }}
+                  className="absolute inset-0"
+                  style={{ transform: `rotate(${angle}deg)` }}
                 >
-                  {seg.label}
+                  <span
+                    className="absolute left-1/2 top-[24%] max-w-24 -translate-x-1/2 rounded-md bg-black/45 px-2 py-1 text-center text-[11px] font-black uppercase leading-tight tracking-wide text-white shadow-[0_2px_8px_rgba(0,0,0,0.65)] ring-1 ring-white/20 backdrop-blur-sm sm:max-w-28 sm:text-xs"
+                    style={{ transform: `translateX(-50%) rotate(-${angle}deg)` }}
+                  >
+                    {seg.label}
+                  </span>
                 </div>
               );
             })}
