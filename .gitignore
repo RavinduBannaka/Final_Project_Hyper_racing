@@ -12,28 +12,26 @@ lerna-debug.log*
 # =========================
 # Dependencies
 # =========================
-node_modules
+node_modules/
 
 # =========================
 # Build folders
 # =========================
-dist
-dist-ssr
-build
+dist/
+dist-ssr/
+build/
 
 # =========================
 # Environment files
 # =========================
 .env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-*.local
+.env.*
+!.env.example
 
 # =========================
-# Enc files
+# Local files
 # =========================
+*.local
 *.enc
 
 # =========================
@@ -41,7 +39,7 @@ build
 # =========================
 .vscode/*
 !.vscode/extensions.json
-.idea
+.idea/
 .DS_Store
 Thumbs.db
 
